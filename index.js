@@ -17,6 +17,8 @@ process.on("exit", function (code) {
 async function main() {
   const dbSrc = db.instance("src");
   const dbDest = db.instance("dest");
+  const namaDbSrc = db.databaseName("src");
+  const namaDbDest = db.databaseName("dest");
   try {
     // const hariini = moment();
     console.log(
@@ -24,27 +26,37 @@ async function main() {
         "DD-MMM-YY HH:mm:ss"
       )}`
     );
-    const builder1 = dbDest("information_schema.tables")
+    let [tableWithFK] =
+      await dbDest.raw(`SELECT kcu.table_name AS child_table, kcu.referenced_table_name AS master_table
+ FROM information_schema.key_column_usage kcu WHERE kcu.constraint_schema = '${namaDbDest}' AND kcu.referenced_table_name IS NOT NULL`);
+
+    const tableContraint = [];
+    for (let idxFK = 0; idxFK < tableWithFK.length; idxFK++) {
+      const fk = tableWithFK[idxFK];
+      if (tableContraint.indexOf(fk.master_table) == -1)
+        tableContraint.push(fk.master_table);
+      if (tableContraint.indexOf(fk.child_table) == -1)
+        tableContraint.push(fk.child_table);
+    }
+    console.log("tableContraint:", tableContraint);
+
+    let tables = await dbDest("information_schema.tables")
       .where({
-        table_schema: db.databaseName("dest"),
+        table_schema: namaDbDest,
         table_type: "BASE TABLE",
-      }) // Ganti dengan nama database Anda
+      })
       .select("table_name");
-    console.log("#builder1 native: ", builder1.toSQL().toNative());
-    let tables = await builder1;
 
     const tableDbDest = tables.map(
       (table) => table.TABLE_NAME || table.table_name
     );
 
-    const builder2 = dbSrc("information_schema.tables")
+    tables = await dbSrc("information_schema.tables")
       .where({
-        table_schema: db.databaseName("src"),
+        table_schema: namaDbSrc,
         table_type: "BASE TABLE",
-      }) // Ganti dengan nama database Anda
+      })
       .select("table_name");
-    console.log("#builder2 native: ", builder2.toSQL().toNative());
-    tables = await builder2;
 
     const tableDbSrc = tables.map(
       (table) => table.TABLE_NAME || table.table_name
@@ -54,8 +66,107 @@ async function main() {
 
     for (let index = 0; index < tableDbDest.length; index++) {
       const dest = tableDbDest[index];
+      if (tableContraint.indexOf(dest) == -1) {
+        const src = tableDbSrc.find((n) => n == dest);
+        if (src) {
+          console.log(`${index + 1}. (dbDest): ${dest}  ,(dbSrc): ${src}`);
+          const [strTbl, isiTbl] = await Promise.all([
+            dbDest("information_schema.columns")
+              .where({
+                table_schema: namaDbDest,
+                table_name: dest,
+              })
+              .select(["column_name", "data_type"]),
+            dbSrc(src).select([" * "]),
+          ]);
+
+          for (let idxrec = 0; idxrec < isiTbl.length; idxrec++) {
+            const rec = isiTbl[idxrec];
+            const obj = {};
+            for (let idxSrc = 0; idxSrc < strTbl.length; idxSrc++) {
+              const kol = strTbl[idxSrc];
+            }
+            strTbl.forEach((kol) => {
+              switch (kol.data_type) {
+                case "varchar":
+                  obj[kol.column_name] = rec[kol.column_name] || "";
+                  break;
+
+                case "date":
+                  obj[kol.column_name] = rec[kol.column_name] || null;
+                  break;
+
+                case "datetime":
+                  obj[kol.column_name] = rec[kol.column_name] || null;
+                  break;
+                case "time":
+                  obj[kol.column_name] = rec[kol.column_name] || null;
+                  break;
+
+                case "timestamp":
+                  obj[kol.column_name] = rec[kol.column_name] || null;
+                  break;
+
+                default:
+                  obj[kol.column_name] = rec[kol.column_name] || 0;
+                  break;
+              }
+            });
+
+            await dbDest(dest).insert(obj);
+          }
+        }
+      }
+    }
+
+    for (let index = 0; index < tableContraint.length; index++) {
+      const dest = tableContraint[index];
       const src = tableDbSrc.find((n) => n == dest);
-      console.log(`${index + 1}. (dbDest): ${dest}  ,(dbSrc): ${src}`);
+      if (src) {
+        console.log(`${index + 1}. (dbDest): ${dest}  ,(dbSrc): ${src}`);
+        const [strTbl, isiTbl] = await Promise.all([
+          dbDest("information_schema.columns")
+            .where({
+              table_schema: namaDbDest,
+              table_name: dest,
+            })
+            .select(["column_name", "data_type"]),
+          dbSrc(src).select([" * "]),
+        ]);
+
+        for (let idxrec = 0; idxrec < isiTbl.length; idxrec++) {
+          const rec = isiTbl[idxrec];
+          const obj = {};
+          strTbl.forEach((kol) => {
+            switch (kol.data_type) {
+              case "varchar":
+                obj[kol.column_name] = rec[kol.column_name] || "";
+                break;
+
+              case "date":
+                obj[kol.column_name] = rec[kol.column_name] || null;
+                break;
+
+              case "datetime":
+                obj[kol.column_name] = rec[kol.column_name] || null;
+                break;
+              case "time":
+                obj[kol.column_name] = rec[kol.column_name] || null;
+                break;
+
+              case "timestamp":
+                obj[kol.column_name] = rec[kol.column_name] || null;
+                break;
+
+              default:
+                obj[kol.column_name] = rec[kol.column_name] || 0;
+                break;
+            }
+          });
+
+          await dbDest(dest).insert(obj);
+        }
+      }
     }
 
     console.log(
