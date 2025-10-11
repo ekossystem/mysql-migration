@@ -87,29 +87,31 @@ async function main() {
               const kol = strTbl[idxSrc];
             }
             strTbl.forEach((kol) => {
-              switch (kol.data_type) {
-                case "varchar":
-                  obj[kol.column_name] = rec[kol.column_name] || "";
-                  break;
+              if (rec[kol.column_name]) {
+                switch (kol.data_type) {
+                  case "varchar":
+                    obj[kol.column_name] = rec[kol.column_name] || "";
+                    break;
 
-                case "date":
-                  obj[kol.column_name] = rec[kol.column_name] || null;
-                  break;
+                  case "date":
+                    obj[kol.column_name] = rec[kol.column_name] || null;
+                    break;
 
-                case "datetime":
-                  obj[kol.column_name] = rec[kol.column_name] || null;
-                  break;
-                case "time":
-                  obj[kol.column_name] = rec[kol.column_name] || null;
-                  break;
+                  case "datetime":
+                    obj[kol.column_name] = rec[kol.column_name] || null;
+                    break;
+                  case "time":
+                    obj[kol.column_name] = rec[kol.column_name] || null;
+                    break;
 
-                case "timestamp":
-                  obj[kol.column_name] = rec[kol.column_name] || null;
-                  break;
+                  case "timestamp":
+                    obj[kol.column_name] = rec[kol.column_name] || null;
+                    break;
 
-                default:
-                  obj[kol.column_name] = rec[kol.column_name] || 0;
-                  break;
+                  default:
+                    obj[kol.column_name] = rec[kol.column_name] || 0;
+                    break;
+                }
               }
             });
 
@@ -138,29 +140,31 @@ async function main() {
           const rec = isiTbl[idxrec];
           const obj = {};
           strTbl.forEach((kol) => {
-            switch (kol.data_type) {
-              case "varchar":
-                obj[kol.column_name] = rec[kol.column_name] || "";
-                break;
+            if (rec[kol.column_name]) {
+              switch (kol.data_type) {
+                case "varchar":
+                  obj[kol.column_name] = rec[kol.column_name] || "";
+                  break;
 
-              case "date":
-                obj[kol.column_name] = rec[kol.column_name] || null;
-                break;
+                case "date":
+                  obj[kol.column_name] = rec[kol.column_name] || null;
+                  break;
 
-              case "datetime":
-                obj[kol.column_name] = rec[kol.column_name] || null;
-                break;
-              case "time":
-                obj[kol.column_name] = rec[kol.column_name] || null;
-                break;
+                case "datetime":
+                  obj[kol.column_name] = rec[kol.column_name] || null;
+                  break;
+                case "time":
+                  obj[kol.column_name] = rec[kol.column_name] || null;
+                  break;
 
-              case "timestamp":
-                obj[kol.column_name] = rec[kol.column_name] || null;
-                break;
+                case "timestamp":
+                  obj[kol.column_name] = rec[kol.column_name] || null;
+                  break;
 
-              default:
-                obj[kol.column_name] = rec[kol.column_name] || 0;
-                break;
+                default:
+                  obj[kol.column_name] = rec[kol.column_name] || 0;
+                  break;
+              }
             }
           });
 
