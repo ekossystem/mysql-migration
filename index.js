@@ -88,29 +88,36 @@ async function main() {
             }
             strTbl.forEach((kol) => {
               if (rec[kol.column_name] || kol.is_nullable == "NO") {
-                switch (kol.data_type) {
-                  case "varchar":
-                    obj[kol.column_name] = rec[kol.column_name] || "";
-                    break;
+                if (
+                  dest == "task_attachment" &&
+                  kol.column_name == "attchFile"
+                ) {
+                  obj.attchFile = obj.attachmentKey;
+                } else {
+                  switch (kol.data_type) {
+                    case "varchar":
+                      obj[kol.column_name] = rec[kol.column_name] || "";
+                      break;
 
-                  case "date":
-                    obj[kol.column_name] = rec[kol.column_name] || null;
-                    break;
+                    case "date":
+                      obj[kol.column_name] = rec[kol.column_name] || null;
+                      break;
 
-                  case "datetime":
-                    obj[kol.column_name] = rec[kol.column_name] || null;
-                    break;
-                  case "time":
-                    obj[kol.column_name] = rec[kol.column_name] || null;
-                    break;
+                    case "datetime":
+                      obj[kol.column_name] = rec[kol.column_name] || null;
+                      break;
+                    case "time":
+                      obj[kol.column_name] = rec[kol.column_name] || null;
+                      break;
 
-                  case "timestamp":
-                    obj[kol.column_name] = rec[kol.column_name] || null;
-                    break;
+                    case "timestamp":
+                      obj[kol.column_name] = rec[kol.column_name] || null;
+                      break;
 
-                  default:
-                    obj[kol.column_name] = rec[kol.column_name] || 0;
-                    break;
+                    default:
+                      obj[kol.column_name] = rec[kol.column_name] || 0;
+                      break;
+                  }
                 }
               }
             });
