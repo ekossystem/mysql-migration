@@ -104,14 +104,14 @@ async function main() {
                       break;
 
                     case "datetime":
-                      obj[kol.column_name] = rec[kol.column_name] || null;
+                      obj[kol.column_name] = rec[kol.column_name] || new Date();
                       break;
                     case "time":
                       obj[kol.column_name] = rec[kol.column_name] || null;
                       break;
 
                     case "timestamp":
-                      obj[kol.column_name] = rec[kol.column_name] || null;
+                      obj[kol.column_name] = rec[kol.column_name] || new Date();
                       break;
 
                     default:
@@ -158,7 +158,7 @@ async function main() {
                   break;
 
                 case "datetime":
-                  obj[kol.column_name] = rec[kol.column_name] || null;
+                  obj[kol.column_name] = rec[kol.column_name] || new Date();
                   break;
                 case "time":
                   obj[kol.column_name] = rec[kol.column_name] || null;
