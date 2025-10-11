@@ -76,7 +76,7 @@ async function main() {
                 table_schema: namaDbDest,
                 table_name: dest,
               })
-              .select(["column_name", "data_type"]),
+              .select(["column_name", "data_type", "is_nullable"]),
             dbSrc(src).select([" * "]),
           ]);
 
@@ -87,7 +87,7 @@ async function main() {
               const kol = strTbl[idxSrc];
             }
             strTbl.forEach((kol) => {
-              if (rec[kol.column_name]) {
+              if (rec[kol.column_name] || kol.is_nullable == "NO") {
                 switch (kol.data_type) {
                   case "varchar":
                     obj[kol.column_name] = rec[kol.column_name] || "";
@@ -132,7 +132,7 @@ async function main() {
               table_schema: namaDbDest,
               table_name: dest,
             })
-            .select(["column_name", "data_type"]),
+            .select(["column_name", "data_type", "is_nullable"]),
           dbSrc(src).select([" * "]),
         ]);
 
@@ -140,7 +140,7 @@ async function main() {
           const rec = isiTbl[idxrec];
           const obj = {};
           strTbl.forEach((kol) => {
-            if (rec[kol.column_name]) {
+            if (rec[kol.column_name] || kol.is_nullable == "NO") {
               switch (kol.data_type) {
                 case "varchar":
                   obj[kol.column_name] = rec[kol.column_name] || "";
