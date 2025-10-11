@@ -15,8 +15,8 @@ function parseMysqlUrl(connStringUrl) {
     password: parsed.password,
     database: parsed.pathname.replace(/^\//, ""), // hapus leading "/"
     decimalNumbers: true, // <--- ini penting banget agar decimal tidak dijadikan STRING
-    charset: "utf8mb4", // Match dengan server
-    collation: "utf8mb4_general_ci", // Match dengan server
+    charset: process.env.DB_CHARSET || "utf8", // Match dengan server
+    collation: process.env.DB_COLLATION || "utf8_general_ci", // Match dengan server
   };
 }
 
