@@ -128,6 +128,8 @@ async function main() {
                     obj.inven_catid = `${rec.kodeacc}${rec.compcode}${rec.isdeleted}`;
                   if (dest == "inventory_receipt")
                     obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
+                  if (dest == "inventory_issued_group_detail")
+                    obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
                 }
               }
             });
