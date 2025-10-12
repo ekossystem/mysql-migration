@@ -16,7 +16,6 @@ function parseMysqlUrl(connStringUrl) {
     database: parsed.pathname.replace(/^\//, ""), // hapus leading "/"
     decimalNumbers: true, // <--- ini penting banget agar decimal tidak dijadikan STRING
     charset: process.env.DB_CHARSET || "utf8", // Match dengan server
-    collation: process.env.DB_COLLATION || "utf8_general_ci", // Match dengan server
   };
 }
 
@@ -39,21 +38,27 @@ function knexInstance(name) {
         createTimeoutMillis: 3000,
         acquireTimeoutMillis: 30000,
         afterCreate: (conn, done) => {
-          conn.query("SHOW STATUS LIKE 'Threads_connected'", (err, results) => {
-            if (err) {
-              console.log(
-                "New DB connection created: Error checking Threads_connected:",
-                err
-              );
-            } else {
-              const threadsConnected = results[0]?.Value || "N/A";
-              console.log(
-                "New DB connection created: Total Connections(all clients):",
-                threadsConnected
+          conn.query(
+            `SET collation_connection = '${
+              process.env.DB_COLLATION || "utf8_general_ci"
+            }'`,
+            (err) => {
+              if (err) {
+                console.error("Error setting collation:", err);
+              }
+              conn.query(
+                "SHOW STATUS LIKE 'Threads_connected'",
+                (err, results) => {
+                  const threadsConnected = results?.[0]?.Value || "N/A";
+                  console.log(
+                    "New DB connection created: Total Connections(all clients):",
+                    threadsConnected
+                  );
+                  done(null, conn);
+                }
               );
             }
-            done(null, conn); // wajib tetap panggil done()
-          });
+          );
         },
       },
       debug: false,
