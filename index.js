@@ -10,7 +10,9 @@ Object.keys(envs).forEach((key) => {
 console.log('PROCESS "Migrasi data DB1 ke DB2" begins');
 process.on("exit", function (code) {
   return console.log(
-    `PROCESS "Migrasi data DB1 ke DB2" Exit with code ${code}`
+    `PROCESS "Migrasi data DB1 ke DB2" Exit with code ${code} @ ${moment().format(
+      "DD-MMM-YY HH:mm:ss"
+    )}`
   );
 });
 
