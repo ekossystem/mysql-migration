@@ -121,6 +121,14 @@ async function main() {
                       break;
                   }
                 }
+              } else {
+                // dest in ["inventory_category","inventory_receipt"]
+                if (kol.column_name == "inven_catid") {
+                  if (dest == "inventory_category")
+                    obj.inven_catid = `${rec.kodeacc}${rec.compcode}${rec.isdeleted}`;
+                  if (dest == "inventory_receipt")
+                    obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
+                }
               }
             });
 
