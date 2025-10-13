@@ -90,7 +90,14 @@ async function main() {
             }
             strTbl.forEach((kol) => {
               if (rec[kol.column_name] || kol.is_nullable == "NO") {
-                if (
+                if (kol.column_name == "inven_catid") {
+                  if (dest == "inventory_category")
+                    obj.inven_catid = `${rec.kodeacc}${rec.compcode}${rec.isdeleted}`;
+                  if (dest == "inventory_receipt")
+                    obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
+                  if (dest == "inventory_issued_group_detail")
+                    obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
+                } else if (
                   dest == "task_attachment" &&
                   kol.column_name == "attchFile"
                 ) {
@@ -122,7 +129,6 @@ async function main() {
                   }
                 }
               } else {
-                // dest in ["inventory_category","inventory_receipt"]
                 if (kol.column_name == "inven_catid") {
                   if (dest == "inventory_category")
                     obj.inven_catid = `${rec.kodeacc}${rec.compcode}${rec.isdeleted}`;
