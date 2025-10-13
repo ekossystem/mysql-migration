@@ -30,10 +30,10 @@ async function main() {
       )}`
     );
     const [strTbl, attchList] = await Promise.all([
-      dbDest("information_schema.columns")
+      ctx("information_schema.columns")
         .where({
-          table_schema: "task_attachment",
-          table_name: dest,
+          table_schema: db.databaseName("src"),
+          table_name: "task_attachment",
         })
         .select(["column_name", "data_type", "is_nullable"]),
       ctx("task_attachment")
