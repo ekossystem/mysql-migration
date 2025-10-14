@@ -5,6 +5,7 @@ const s3Option = {
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
 };
+console.log("s3Option: ", s3Option);
 // if (process.env.AWS_ENDPOINT) {
 //   s3Option.endpoint = process.env.AWS_ENDPOINT;
 //   s3Option.s3ForcePathStyle = true; // penting untuk Cloudflare R2 / MinIO
