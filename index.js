@@ -89,7 +89,11 @@ async function main() {
               const kol = strTbl[idxSrc];
             }
             strTbl.forEach((kol) => {
-              if (rec[kol.column_name] || kol.is_nullable == "NO") {
+              if (
+                rec[kol.column_name] ||
+                kol.is_nullable == "NO" ||
+                rec[kol.column_name] === 0
+              ) {
                 if (kol.column_name == "inven_catid") {
                   if (dest == "inventory_category")
                     obj.inven_catid = `${rec.kodeacc}${rec.compcode}${rec.isdeleted}`;
@@ -165,7 +169,11 @@ async function main() {
           const rec = isiTbl[idxrec];
           const obj = {};
           strTbl.forEach((kol) => {
-            if (rec[kol.column_name] || kol.is_nullable == "NO") {
+            if (
+              rec[kol.column_name] ||
+              kol.is_nullable == "NO" ||
+              rec[kol.column_name] === 0
+            ) {
               switch (kol.data_type) {
                 case "varchar":
                   obj[kol.column_name] = rec[kol.column_name] || "";
