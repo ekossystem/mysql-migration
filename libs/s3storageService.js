@@ -5,11 +5,11 @@ const s3Option = {
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
 };
+if (process.env.AWS_ENDPOINT) {
+  s3Option.endpoint = process.env.AWS_ENDPOINT;
+  s3Option.s3ForcePathStyle = true; // penting untuk Cloudflare R2 / MinIO
+}
 console.log("s3Option: ", s3Option);
-// if (process.env.AWS_ENDPOINT) {
-//   s3Option.endpoint = process.env.AWS_ENDPOINT;
-//   s3Option.s3ForcePathStyle = true; // penting untuk Cloudflare R2 / MinIO
-// }
 const s3 = new AWS.S3(s3Option);
 
 async function uploadToS3(bucket, key, buffer, mimetype) {

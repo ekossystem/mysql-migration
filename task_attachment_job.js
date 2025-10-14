@@ -6,11 +6,13 @@ const envs = require("./envs/local.json");
 // const fs = require('fs');
 // const path = require('node:path');
 const moment = require("moment");
-const { db, s3storage } = require("./libs");
 
 Object.keys(envs).forEach((key) => {
   process.env[key] = envs[key];
 });
+
+const { db, s3storage } = require("./libs");
+
 console.log('PROCESS "ERP FILE ATTACHMENT" begins');
 process.on("exit", function (code) {
   return console.log(
