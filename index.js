@@ -2,11 +2,10 @@
 const envs = require("./envs/local.json");
 // const readline = require('readline');
 const moment = require("moment");
-const { db } = require("./libs");
+const db = require("./libs/db.js");
 
 Object.keys(envs).forEach((key) => {
   process.env[key] = envs[key];
-  console.log(`${key} : `, envs[key]);
 });
 console.log('PROCESS "Migrasi data DB1 ke DB2" begins');
 process.on("exit", function (code) {
@@ -18,7 +17,6 @@ async function main() {
   const dbDest = db.instance("dest");
   const namaDbSrc = db.databaseName("src");
   const namaDbDest = db.databaseName("dest");
-  console.log(`namaDbSrc : `, namaDbSrc);
   try {
     // const hariini = moment();
     console.log(`Start PROCESS "Migrasi data DB1 ke DB2" @ ${moment().format("DD-MMM-YY HH:mm:ss")}`);
