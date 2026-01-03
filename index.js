@@ -22,7 +22,6 @@ async function main() {
   try {
     // const hariini = moment();
     console.log(`Start PROCESS "Migrasi data DB1 ke DB2" @ ${moment().format("DD-MMM-YY HH:mm:ss")}`);
-    console.log("tableContraint:", tableContraint);
     const builder1 = await dbSrc("information_schema.tables")
       .where({
         table_schema: namaDbSrc,
@@ -40,6 +39,7 @@ async function main() {
       if (tableContraint.indexOf(fk.master_table) == -1) tableContraint.push(fk.master_table);
       if (tableContraint.indexOf(fk.child_table) == -1) tableContraint.push(fk.child_table);
     }
+    console.log("tableContraint:", tableContraint);
 
     let tables = await dbDest("information_schema.tables")
       .where({
