@@ -40,6 +40,7 @@ async function main() {
       .select("table_name");
 
     const tableDbDest = tables.map((table) => table.TABLE_NAME || table.table_name);
+    console.log("tableDbDest: ", tableDbDest.length);
 
     tables = await dbSrc("information_schema.tables")
       .where({
@@ -49,7 +50,6 @@ async function main() {
       .select("table_name");
 
     const tableDbSrc = tables.map((table) => table.TABLE_NAME || table.table_name);
-    console.log("tableDbDest: ", tableDbDest.length);
     console.log("tableDbSrc: ", tableDbSrc.length);
 
     for (let index = 0; index < tableDbDest.length; index++) {
