@@ -18,6 +18,7 @@ async function main() {
   const dbDest = db.instance("dest");
   const namaDbSrc = db.databaseName("src");
   const namaDbDest = db.databaseName("dest");
+  console.log(`namaDbSrc : `, namaDbSrc);
   try {
     // const hariini = moment();
     console.log(`Start PROCESS "Migrasi data DB1 ke DB2" @ ${moment().format("DD-MMM-YY HH:mm:ss")}`);
