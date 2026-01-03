@@ -13,22 +13,26 @@ process.on("exit", function (code) {
 });
 
 async function main() {
-  const dbSrc = db.instance("src");
-  const dbDest = db.instance("dest");
-  const namaDbSrc = db.databaseName("src");
-  const namaDbDest = db.databaseName("dest");
+  const dbSrc = db.instance("asal");
+  const dbDest = db.instance("tujuan");
+  const namaDbSrc = db.databaseName("asal");
+  const namaDbDest = db.databaseName("tujuan");
   try {
     // const hariini = moment();
     console.log(`Start PROCESS "Migrasi data DB1 ke DB2" @ ${moment().format("DD-MMM-YY HH:mm:ss")}`);
-    const builder1 = await dbSrc("information_schema.tables")
+    const builder1 = dbSrc("information_schema.tables")
       .where({
         table_schema: namaDbSrc,
         table_type: "BASE TABLE",
       })
       .select("table_name");
     console.log("#builder1 native: ", builder1.toSQL().toNative());
+    const listTable = await builder1;
 
-    let [tableWithFK] = await dbDest.raw(`SELECT kcu.table_name AS child_table, kcu.referenced_table_name AS master_table
+    const tableDbSrc = listTable.map((table) => table.TABLE_NAME || table.table_name);
+    console.log("tableDbSrc: ", tableDbSrc);
+
+    const [tableWithFK] = await dbDest.raw(`SELECT kcu.table_name AS child_table, kcu.referenced_table_name AS master_table
  FROM information_schema.key_column_usage kcu WHERE kcu.constraint_schema = '${namaDbDest}' AND kcu.referenced_table_name IS NOT NULL`);
 
     const tableContraint = [];
@@ -39,7 +43,7 @@ async function main() {
     }
     console.log("tableContraint:", tableContraint);
 
-    let tables = await dbDest("information_schema.tables")
+    const tables = await dbDest("information_schema.tables")
       .where({
         table_schema: namaDbDest,
         table_type: "BASE TABLE",
@@ -48,11 +52,6 @@ async function main() {
 
     const tableDbDest = tables.map((table) => table.TABLE_NAME || table.table_name);
     console.log("tableDbDest: ", tableDbDest.length);
-
-    tables = await builder1;
-
-    const tableDbSrc = tables.map((table) => table.TABLE_NAME || table.table_name);
-    console.log("tableDbSrc: ", tableDbSrc.length);
 
     for (let index = 0; index < tableDbDest.length; index++) {
       const dest = tableDbDest[index];
