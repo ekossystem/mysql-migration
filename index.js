@@ -6,6 +6,7 @@ const { db } = require("./libs");
 
 Object.keys(envs).forEach((key) => {
   process.env[key] = envs[key];
+  console.log(`${key} : `, envs[key]);
 });
 console.log('PROCESS "Migrasi data DB1 ke DB2" begins');
 process.on("exit", function (code) {
