@@ -22,6 +22,15 @@ async function main() {
   try {
     // const hariini = moment();
     console.log(`Start PROCESS "Migrasi data DB1 ke DB2" @ ${moment().format("DD-MMM-YY HH:mm:ss")}`);
+    console.log("tableContraint:", tableContraint);
+    const builder1 = await dbSrc("information_schema.tables")
+      .where({
+        table_schema: namaDbSrc,
+        table_type: "BASE TABLE",
+      })
+      .select("table_name");
+    console.log("#builder1 native: ", builder1.toSQL().toNative());
+
     let [tableWithFK] = await dbDest.raw(`SELECT kcu.table_name AS child_table, kcu.referenced_table_name AS master_table
  FROM information_schema.key_column_usage kcu WHERE kcu.constraint_schema = '${namaDbDest}' AND kcu.referenced_table_name IS NOT NULL`);
 
@@ -31,14 +40,6 @@ async function main() {
       if (tableContraint.indexOf(fk.master_table) == -1) tableContraint.push(fk.master_table);
       if (tableContraint.indexOf(fk.child_table) == -1) tableContraint.push(fk.child_table);
     }
-    console.log("tableContraint:", tableContraint);
-    const builder1 = await dbSrc("information_schema.tables")
-      .where({
-        table_schema: namaDbSrc,
-        table_type: "BASE TABLE",
-      })
-      .select("table_name");
-    console.log("#builder1 native: ", builder1.toSQL().toNative());
 
     let tables = await dbDest("information_schema.tables")
       .where({
