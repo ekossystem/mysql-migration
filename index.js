@@ -9,11 +9,7 @@ Object.keys(envs).forEach((key) => {
 });
 console.log('PROCESS "Migrasi data DB1 ke DB2" begins');
 process.on("exit", function (code) {
-  return console.log(
-    `PROCESS "Migrasi data DB1 ke DB2" Exit with code ${code} @ ${moment().format(
-      "DD-MMM-YY HH:mm:ss"
-    )}`
-  );
+  return console.log(`PROCESS "Migrasi data DB1 ke DB2" Exit with code ${code} @ ${moment().format("DD-MMM-YY HH:mm:ss")}`);
 });
 
 async function main() {
@@ -23,22 +19,15 @@ async function main() {
   const namaDbDest = db.databaseName("dest");
   try {
     // const hariini = moment();
-    console.log(
-      `Start PROCESS "Migrasi data DB1 ke DB2" @ ${moment().format(
-        "DD-MMM-YY HH:mm:ss"
-      )}`
-    );
-    let [tableWithFK] =
-      await dbDest.raw(`SELECT kcu.table_name AS child_table, kcu.referenced_table_name AS master_table
+    console.log(`Start PROCESS "Migrasi data DB1 ke DB2" @ ${moment().format("DD-MMM-YY HH:mm:ss")}`);
+    let [tableWithFK] = await dbDest.raw(`SELECT kcu.table_name AS child_table, kcu.referenced_table_name AS master_table
  FROM information_schema.key_column_usage kcu WHERE kcu.constraint_schema = '${namaDbDest}' AND kcu.referenced_table_name IS NOT NULL`);
 
     const tableContraint = [];
     for (let idxFK = 0; idxFK < tableWithFK.length; idxFK++) {
       const fk = tableWithFK[idxFK];
-      if (tableContraint.indexOf(fk.master_table) == -1)
-        tableContraint.push(fk.master_table);
-      if (tableContraint.indexOf(fk.child_table) == -1)
-        tableContraint.push(fk.child_table);
+      if (tableContraint.indexOf(fk.master_table) == -1) tableContraint.push(fk.master_table);
+      if (tableContraint.indexOf(fk.child_table) == -1) tableContraint.push(fk.child_table);
     }
     console.log("tableContraint:", tableContraint);
 
@@ -49,9 +38,7 @@ async function main() {
       })
       .select("table_name");
 
-    const tableDbDest = tables.map(
-      (table) => table.TABLE_NAME || table.table_name
-    );
+    const tableDbDest = tables.map((table) => table.TABLE_NAME || table.table_name);
 
     tables = await dbSrc("information_schema.tables")
       .where({
@@ -60,9 +47,7 @@ async function main() {
       })
       .select("table_name");
 
-    const tableDbSrc = tables.map(
-      (table) => table.TABLE_NAME || table.table_name
-    );
+    const tableDbSrc = tables.map((table) => table.TABLE_NAME || table.table_name);
     console.log("tableDbDest: ", tableDbDest.length);
     console.log("tableDbSrc: ", tableDbSrc.length);
 
@@ -85,26 +70,16 @@ async function main() {
           for (let idxrec = 0; idxrec < isiTbl.length; idxrec++) {
             const rec = isiTbl[idxrec];
             const obj = {};
-            for (let idxSrc = 0; idxSrc < strTbl.length; idxSrc++) {
-              const kol = strTbl[idxSrc];
-            }
+            // for (let idxSrc = 0; idxSrc < strTbl.length; idxSrc++) {
+            //   const kol = strTbl[idxSrc];
+            // }
             strTbl.forEach((kol) => {
-              if (
-                rec[kol.column_name] ||
-                kol.is_nullable == "NO" ||
-                rec[kol.column_name] === 0
-              ) {
+              if (rec[kol.column_name] || kol.is_nullable == "NO" || rec[kol.column_name] === 0) {
                 if (kol.column_name == "inven_catid") {
-                  if (dest == "inventory_category")
-                    obj.inven_catid = `${rec.kodeacc}${rec.compcode}${rec.isdeleted}`;
-                  if (dest == "inventory_receipt")
-                    obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
-                  if (dest == "inventory_issued_group_detail")
-                    obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
-                } else if (
-                  dest == "task_attachment" &&
-                  kol.column_name == "attchFile"
-                ) {
+                  if (dest == "inventory_category") obj.inven_catid = `${rec.kodeacc}${rec.compcode}${rec.isdeleted}`;
+                  if (dest == "inventory_receipt") obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
+                  if (dest == "inventory_issued_group_detail") obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
+                } else if (dest == "task_attachment" && kol.column_name == "attchFile") {
                   obj.attchFile = obj.attachmentKey;
                 } else {
                   switch (kol.data_type) {
@@ -134,12 +109,9 @@ async function main() {
                 }
               } else {
                 if (kol.column_name == "inven_catid") {
-                  if (dest == "inventory_category")
-                    obj.inven_catid = `${rec.kodeacc}${rec.compcode}${rec.isdeleted}`;
-                  if (dest == "inventory_receipt")
-                    obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
-                  if (dest == "inventory_issued_group_detail")
-                    obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
+                  if (dest == "inventory_category") obj.inven_catid = `${rec.kodeacc}${rec.compcode}${rec.isdeleted}`;
+                  if (dest == "inventory_receipt") obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
+                  if (dest == "inventory_issued_group_detail") obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
                 }
               }
             });
@@ -169,11 +141,7 @@ async function main() {
           const rec = isiTbl[idxrec];
           const obj = {};
           strTbl.forEach((kol) => {
-            if (
-              rec[kol.column_name] ||
-              kol.is_nullable == "NO" ||
-              rec[kol.column_name] === 0
-            ) {
+            if (rec[kol.column_name] || kol.is_nullable == "NO" || rec[kol.column_name] === 0) {
               switch (kol.data_type) {
                 case "varchar":
                   obj[kol.column_name] = rec[kol.column_name] || "";
@@ -206,11 +174,7 @@ async function main() {
       }
     }
 
-    console.log(
-      `PROCESS "Migrasi data DB1 ke DB2" Complete Successfully @ ${moment().format(
-        "DD-MMM-YY HH:mm:ss"
-      )} `
-    );
+    console.log(`PROCESS "Migrasi data DB1 ke DB2" Complete Successfully @ ${moment().format("DD-MMM-YY HH:mm:ss")} `);
     process.exit(1);
   } catch (error) {
     console.log(error);
