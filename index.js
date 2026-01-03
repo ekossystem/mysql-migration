@@ -24,7 +24,6 @@ async function main() {
     let [tableWithFK] = await dbDest.raw(`SELECT kcu.table_name AS child_table, kcu.referenced_table_name AS master_table
  FROM information_schema.key_column_usage kcu WHERE kcu.constraint_schema = '${namaDbDest}' AND kcu.referenced_table_name IS NOT NULL`);
 
-    console.log("dbSrc:", dbSrc);
     const tableContraint = [];
     for (let idxFK = 0; idxFK < tableWithFK.length; idxFK++) {
       const fk = tableWithFK[idxFK];
@@ -32,7 +31,6 @@ async function main() {
       if (tableContraint.indexOf(fk.child_table) == -1) tableContraint.push(fk.child_table);
     }
     console.log("tableContraint:", tableContraint);
-    console.log("dbSrc:", dbSrc);
 
     let tables = await dbDest("information_schema.tables")
       .where({
@@ -44,12 +42,14 @@ async function main() {
     const tableDbDest = tables.map((table) => table.TABLE_NAME || table.table_name);
     console.log("tableDbDest: ", tableDbDest.length);
 
-    tables = await dbSrc("information_schema.tables")
+    const builder1 = await dbSrc("information_schema.tables")
       .where({
         table_schema: namaDbSrc,
         table_type: "BASE TABLE",
       })
       .select("table_name");
+    console.log("#builder1 native: ", builder1.toSQL().toNative());
+    tables = await builder1;
 
     const tableDbSrc = tables.map((table) => table.TABLE_NAME || table.table_name);
     console.log("tableDbSrc: ", tableDbSrc.length);
