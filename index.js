@@ -24,6 +24,7 @@ async function main() {
     let [tableWithFK] = await dbDest.raw(`SELECT kcu.table_name AS child_table, kcu.referenced_table_name AS master_table
  FROM information_schema.key_column_usage kcu WHERE kcu.constraint_schema = '${namaDbDest}' AND kcu.referenced_table_name IS NOT NULL`);
 
+    console.log("dbSrc:", dbSrc);
     const tableContraint = [];
     for (let idxFK = 0; idxFK < tableWithFK.length; idxFK++) {
       const fk = tableWithFK[idxFK];
@@ -31,6 +32,7 @@ async function main() {
       if (tableContraint.indexOf(fk.child_table) == -1) tableContraint.push(fk.child_table);
     }
     console.log("tableContraint:", tableContraint);
+    console.log("dbSrc:", dbSrc);
 
     let tables = await dbDest("information_schema.tables")
       .where({
