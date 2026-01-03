@@ -32,6 +32,13 @@ async function main() {
       if (tableContraint.indexOf(fk.child_table) == -1) tableContraint.push(fk.child_table);
     }
     console.log("tableContraint:", tableContraint);
+    const builder1 = await dbSrc("information_schema.tables")
+      .where({
+        table_schema: namaDbSrc,
+        table_type: "BASE TABLE",
+      })
+      .select("table_name");
+    console.log("#builder1 native: ", builder1.toSQL().toNative());
 
     let tables = await dbDest("information_schema.tables")
       .where({
@@ -43,13 +50,6 @@ async function main() {
     const tableDbDest = tables.map((table) => table.TABLE_NAME || table.table_name);
     console.log("tableDbDest: ", tableDbDest.length);
 
-    const builder1 = await dbSrc("information_schema.tables")
-      .where({
-        table_schema: namaDbSrc,
-        table_type: "BASE TABLE",
-      })
-      .select("table_name");
-    console.log("#builder1 native: ", builder1.toSQL().toNative());
     tables = await builder1;
 
     const tableDbSrc = tables.map((table) => table.TABLE_NAME || table.table_name);
