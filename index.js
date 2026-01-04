@@ -151,7 +151,7 @@ async function main() {
               if (err.code === "ER_DUP_ENTRY" || err.errno === 1062) {
                 console.log("Data duplikat ditemukan");
               } else if (err.code === "ER_DATA_TOO_LONG" || err.errno === 1406) {
-                console.warn(`try Skip field logo untuk row noumber = ${nomorRecord}`);
+                console.warn(`try Skip field logo untuk ${dest} row number = ${nomorRecord}`);
                 if (err.sqlMessage.includes("logo")) {
                   // Buat salinan row tanpa kolom logo
                   const { logo, ...safeRow } = obj;
@@ -223,7 +223,7 @@ async function main() {
               if (error.code === "ER_DUP_ENTRY" || error.errno === 1062) {
                 console.log("Data duplikat ditemukan");
               } else if (error.code === "ER_DATA_TOO_LONG" || error.errno === 1406) {
-                console.warn(`try Skip field logo untuk row noumber = ${nomorRecord}`);
+                console.warn(`try Skip field logo untuk ${dest} row number = ${nomorRecord}`);
                 if (error.sqlMessage.includes("logo")) {
                   // Buat salinan row tanpa kolom logo
                   const { logo, ...safeRow } = obj;
