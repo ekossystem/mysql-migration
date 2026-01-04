@@ -215,11 +215,13 @@ async function main() {
             } catch (error) {
               if (error.code === "ER_DUP_ENTRY" || error.errno === 1062) {
                 console.log("Data duplikat ditemukan");
-              } else if (error.code === "ER_DATA_TOO_LONG" && error.sqlMessage.includes("logo")) {
-                console.warn(`Skip field logo untuk row id=${row.id}`);
-                // Buat salinan row tanpa kolom logo
-                const { logo, ...safeRow } = obj;
-                await dbDest(dest).insert(safeRow);
+              } else if (error.code === "ER_DATA_TOO_LONG" || error.errno === 1406) {
+                console.warn(`try Skip field logo untuk row id=${row.id}`);
+                if (error.sqlMessage.includes("logo")) {
+                  // Buat salinan row tanpa kolom logo
+                  const { logo, ...safeRow } = obj;
+                  await dbDest(dest).insert(safeRow);
+                }
               } else {
                 throw error;
               }
