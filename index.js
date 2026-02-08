@@ -104,6 +104,7 @@ async function main() {
           const rec = isiTbl[idxrec];
           nomorRecord = idxrec + 1;
           const obj = {};
+          console.log("strTbl:", strTbl);
           strTbl.forEach((kol) => {
             if (rec[kol.column_name] || kol.is_nullable == "NO" || rec[kol.column_name] === 0) {
               console.log('Masuk (rec[kol.column_name] || kol.is_nullable == "NO" || rec[kol.column_name] === 0)');
