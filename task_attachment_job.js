@@ -7,8 +7,6 @@ const envs = require("./envs/local.json");
 // const path = require('node:path');
 const moment = require("moment");
 
-const companyGroup = "indoplas"; // HARUS DIISI !, sebgai subBucket di S3 AWS
-
 Object.keys(envs).forEach((key) => {
   process.env[key] = envs[key];
 });
@@ -40,7 +38,7 @@ async function main() {
         console.log(`task_attachment attchList: ${attchList.length} records`);
         for (let index = 0; index < attchList.length; index++) {
           const rw = attchList[index];
-          await s3storage.uploadToS3(process.env.AWS_BUCKET, `${process.env.ATTACHMENT_PATH}/${companyGroup}/erp${rw.attachmentKey}`, rw.attchFile, "");
+          await s3storage.uploadToS3(process.env.AWS_BUCKET, `${process.env.ATTACHMENT_PATH}erp${rw.attachmentKey}`, rw.attchFile, "");
         }
       }
       console.log(`PROCESS "ERP FILE ATTACHMENT" Complete Successfully @ ${moment().format("DD-MMM-YY HH:mm:ss")} `);
