@@ -112,7 +112,7 @@ async function main() {
               const is_nullable = kol.is_nullable || kol.IS_NULLABLE;
               const data_type = kol.data_type || kol.DATA_TYPE;
               if (column_name == "itemcategory") {
-                console.log(`${dest}.${column_name}: `, rec[column_name]);
+                console.log(`${dest}.${column_name}: `, [rec[column_name], is_nullable]);
               }
               if (rec[column_name] || is_nullable == "NO" || rec[column_name] === 0) {
                 if (column_name == "inven_catid") {
@@ -148,11 +148,10 @@ async function main() {
                         break;
                     }
                   } else {
-                    obj[column_name] = null;
+                    obj[column_name] = "";
                   }
                 }
               } else {
-                console.log("masuk else");
                 if (column_name == "inven_catid") {
                   if (dest == "inventory_category") obj.inven_catid = `${rec.kodeacc}${rec.compcode}${rec.isdeleted}`;
                   if (dest == "inventory_receipt") obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
