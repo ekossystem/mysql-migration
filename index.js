@@ -75,7 +75,7 @@ async function main() {
 
     const tableDbDest = tables.map((table) => table.TABLE_NAME || table.table_name);
     console.log("tableDbDest: ", tableDbDest.length);
-    await dbDest.safeRow("SET FOREIGN_KEY_CHECKS = 0");
+    await dbDest.raw("SET FOREIGN_KEY_CHECKS = 0");
 
     for (let index = 0; index < tableDbDest.length; index++) {
       const dest = tableDbDest[index];
@@ -247,7 +247,7 @@ async function main() {
     console.log(error);
     process.exit(1);
   } finally {
-    await dbDest.safeRow("SET FOREIGN_KEY_CHECKS = 1");
+    await dbDest.raw("SET FOREIGN_KEY_CHECKS = 1");
     await Promise.all([dbSrc.destroyAll(), dbDest.destroyAll()]);
   }
 }
