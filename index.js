@@ -109,7 +109,6 @@ async function main() {
             const is_nullable = kol.is_nullable || kol.IS_NULLABLE;
             const data_type = kol.data_type || kol.DATA_TYPE;
             if (rec[column_name] || is_nullable == "NO" || rec[column_name] === 0) {
-              console.log('Masuk (rec[column_name] || is_nullable == "NO" || rec[column_name] === 0)');
               if (column_name == "inven_catid") {
                 if (dest == "inventory_category") obj.inven_catid = `${rec.kodeacc}${rec.compcode}${rec.isdeleted}`;
                 if (dest == "inventory_receipt") obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
@@ -143,8 +142,6 @@ async function main() {
                 }
               }
             } else {
-              console.log("masuk else, is_nullable: ", is_nullable);
-              console.log("masuk else, rec[column_name]: ", rec[column_name]);
               if (column_name == "inven_catid") {
                 if (dest == "inventory_category") obj.inven_catid = `${rec.kodeacc}${rec.compcode}${rec.isdeleted}`;
                 if (dest == "inventory_receipt") obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
