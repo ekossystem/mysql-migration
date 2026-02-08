@@ -111,9 +111,6 @@ async function main() {
               const column_name = kol.column_name || kol.COLUMN_NAME;
               const is_nullable = kol.is_nullable || kol.IS_NULLABLE;
               const data_type = kol.data_type || kol.DATA_TYPE;
-              if (column_name == "itemcategory") {
-                console.log(`${dest}.${column_name}: `, [rec[column_name], is_nullable]);
-              }
               if (rec[column_name] || is_nullable == "NO" || rec[column_name] === 0) {
                 if (column_name == "inven_catid") {
                   if (dest == "inventory_category") obj.inven_catid = `${rec.kodeacc}${rec.compcode}${rec.isdeleted}`;
@@ -122,33 +119,29 @@ async function main() {
                 } else if (dest == "task_attachment" && column_name == "attchFile") {
                   obj.attchFile = obj.attachmentKey;
                 } else {
-                  if (is_nullable == "NO") {
-                    switch (data_type) {
-                      case "varchar":
-                        obj[column_name] = rec[column_name] || "";
-                        break;
+                  switch (data_type) {
+                    case "varchar":
+                      obj[column_name] = rec[column_name] || "";
+                      break;
 
-                      case "date":
-                        obj[column_name] = rec[column_name] || null;
-                        break;
+                    case "date":
+                      obj[column_name] = rec[column_name] || null;
+                      break;
 
-                      case "datetime":
-                        obj[column_name] = rec[column_name] || new Date();
-                        break;
-                      case "time":
-                        obj[column_name] = rec[column_name] || null;
-                        break;
+                    case "datetime":
+                      obj[column_name] = rec[column_name] || new Date();
+                      break;
+                    case "time":
+                      obj[column_name] = rec[column_name] || null;
+                      break;
 
-                      case "timestamp":
-                        obj[column_name] = rec[column_name] || new Date();
-                        break;
+                    case "timestamp":
+                      obj[column_name] = rec[column_name] || new Date();
+                      break;
 
-                      default:
-                        obj[column_name] = rec[column_name] || 0;
-                        break;
-                    }
-                  } else {
-                    obj[column_name] = "";
+                    default:
+                      obj[column_name] = rec[column_name] || 0;
+                      break;
                   }
                 }
               } else {
