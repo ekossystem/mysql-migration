@@ -34,7 +34,9 @@ async function main() {
 
     const kol = strTbl.find((k) => k.column_name == "attchFile");
     if (kol) {
-      if (kol.data_type.includes("blob")) {
+      const data_type = kol.data_type || kol.DATA_TYPE;
+
+      if (data_type.includes("blob")) {
         console.log(`task_attachment attchList: ${attchList.length} records`);
         for (let index = 0; index < attchList.length; index++) {
           const rw = attchList[index];

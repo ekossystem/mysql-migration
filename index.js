@@ -104,46 +104,48 @@ async function main() {
           const rec = isiTbl[idxrec];
           nomorRecord = idxrec + 1;
           const obj = {};
-          console.log("strTbl:", strTbl);
           strTbl.forEach((kol) => {
-            if (rec[kol.column_name] || kol.is_nullable == "NO" || rec[kol.column_name] === 0) {
-              console.log('Masuk (rec[kol.column_name] || kol.is_nullable == "NO" || rec[kol.column_name] === 0)');
-              if (kol.column_name == "inven_catid") {
+            const column_name = kol.column_name || kol.COLUMN_NAME;
+            const is_nullable = kol.is_nullable || kol.IS_NULLABLE;
+            const data_type = kol.data_type || kol.DATA_TYPE;
+            if (rec[column_name] || is_nullable == "NO" || rec[column_name] === 0) {
+              console.log('Masuk (rec[column_name] || is_nullable == "NO" || rec[column_name] === 0)');
+              if (column_name == "inven_catid") {
                 if (dest == "inventory_category") obj.inven_catid = `${rec.kodeacc}${rec.compcode}${rec.isdeleted}`;
                 if (dest == "inventory_receipt") obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
                 if (dest == "inventory_issued_group_detail") obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
-              } else if (dest == "task_attachment" && kol.column_name == "attchFile") {
+              } else if (dest == "task_attachment" && column_name == "attchFile") {
                 obj.attchFile = obj.attachmentKey;
               } else {
-                switch (kol.data_type) {
+                switch (data_type) {
                   case "varchar":
-                    obj[kol.column_name] = rec[kol.column_name] || "";
+                    obj[column_name] = rec[column_name] || "";
                     break;
 
                   case "date":
-                    obj[kol.column_name] = rec[kol.column_name] || null;
+                    obj[column_name] = rec[column_name] || null;
                     break;
 
                   case "datetime":
-                    obj[kol.column_name] = rec[kol.column_name] || new Date();
+                    obj[column_name] = rec[column_name] || new Date();
                     break;
                   case "time":
-                    obj[kol.column_name] = rec[kol.column_name] || null;
+                    obj[column_name] = rec[column_name] || null;
                     break;
 
                   case "timestamp":
-                    obj[kol.column_name] = rec[kol.column_name] || new Date();
+                    obj[column_name] = rec[column_name] || new Date();
                     break;
 
                   default:
-                    obj[kol.column_name] = rec[kol.column_name] || 0;
+                    obj[column_name] = rec[column_name] || 0;
                     break;
                 }
               }
             } else {
-              console.log("masuk else, kol.is_nullable: ", kol.is_nullable);
-              console.log("masuk else, rec[kol.column_name]: ", rec[kol.column_name]);
-              if (kol.column_name == "inven_catid") {
+              console.log("masuk else, is_nullable: ", is_nullable);
+              console.log("masuk else, rec[column_name]: ", rec[column_name]);
+              if (column_name == "inven_catid") {
                 if (dest == "inventory_category") obj.inven_catid = `${rec.kodeacc}${rec.compcode}${rec.isdeleted}`;
                 if (dest == "inventory_receipt") obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
                 if (dest == "inventory_issued_group_detail") obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
@@ -195,29 +197,32 @@ async function main() {
     //         nomorRecord = idxrec + 1;
     //         const obj = {};
     //         strTbl.forEach((kol) => {
-    //           if (rec[kol.column_name] || kol.is_nullable == "NO" || rec[kol.column_name] === 0) {
-    //             switch (kol.data_type) {
+    // const column_name = kol.column_name || kol.COLUMN_NAME;
+    // const is_nullable = kol.is_nullable || kol.IS_NULLABLE;
+    // const data_type = kol.data_type || kol.DATA_TYPE;
+    //           if (rec[column_name] || is_nullable == "NO" || rec[column_name] === 0) {
+    //             switch (data_type) {
     //               case "varchar":
-    //                 obj[kol.column_name] = rec[kol.column_name] || "";
+    //                 obj[column_name] = rec[column_name] || "";
     //                 break;
 
     //               case "date":
-    //                 obj[kol.column_name] = rec[kol.column_name] || null;
+    //                 obj[column_name] = rec[column_name] || null;
     //                 break;
 
     //               case "datetime":
-    //                 obj[kol.column_name] = rec[kol.column_name] || new Date();
+    //                 obj[column_name] = rec[column_name] || new Date();
     //                 break;
     //               case "time":
-    //                 obj[kol.column_name] = rec[kol.column_name] || null;
+    //                 obj[column_name] = rec[column_name] || null;
     //                 break;
 
     //               case "timestamp":
-    //                 obj[kol.column_name] = rec[kol.column_name] || null;
+    //                 obj[column_name] = rec[column_name] || null;
     //                 break;
 
     //               default:
-    //                 obj[kol.column_name] = rec[kol.column_name] || 0;
+    //                 obj[column_name] = rec[column_name] || 0;
     //                 break;
     //             }
     //           }
