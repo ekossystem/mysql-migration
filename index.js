@@ -22,6 +22,8 @@ Object.keys(envs).forEach((key) => {
   process.env[key] = envs[key];
 });
 // pertama-tama kosongkan dulu table `mysql_migration_done` pada dbDest
+
+console.log(`node index.js >> ../migration.log 2>&1`);
 console.log("pertama-tama kosongkan dulu table `mysql_migration_done` pada dbDest");
 console.log('PROCESS "Migrasi data DB1 ke DB2" begins');
 process.on("exit", function (code) {
@@ -82,94 +84,95 @@ async function main() {
       const dest = tableDbDest[index];
       nomorRecord = 0;
       // if (tableContraint.indexOf(dest) == -1 && arrTableDone.indexOf(dest) == -1) {
-      const src = tableDbSrc.find((n) => n == dest);
-      if (src) {
-        console.log(`${index + 1}. (dbDest:${namaDbDest}): ${dest}  ,(dbSrc:${namaDbSrc}): ${src}`);
-        const [strTbl, isiTbl] = await Promise.all([
-          dbDest("information_schema.columns")
-            .where({
-              table_schema: namaDbDest,
-              table_name: dest,
-            })
-            .select(["column_name", "data_type", "is_nullable"]),
-          dbSrc(src).select([" * "]),
-        ]);
+      if (arrTableDone.indexOf(dest) == -1) {
+        const src = tableDbSrc.find((n) => n == dest);
+        if (src) {
+          console.log(`${index + 1}. (dbDest:${namaDbDest}): ${dest}  ,(dbSrc:${namaDbSrc}): ${src}`);
+          const [strTbl, isiTbl] = await Promise.all([
+            dbDest("information_schema.columns")
+              .where({
+                table_schema: namaDbDest,
+                table_name: dest,
+              })
+              .select(["column_name", "data_type", "is_nullable"]),
+            dbSrc(src).select([" * "]),
+          ]);
 
-        // const kolCompcode = strTbl.find((row) => row.column_name == "compcode");
-        // if (kolCompcode && overWriteCompcode) {
-        //   await dbDest(dest).where({ compcode: overWriteCompcode }).del();
-        // }
+          // const kolCompcode = strTbl.find((row) => row.column_name == "compcode");
+          // if (kolCompcode && overWriteCompcode) {
+          //   await dbDest(dest).where({ compcode: overWriteCompcode }).del();
+          // }
 
-        for (let idxrec = 0; idxrec < isiTbl.length; idxrec++) {
-          const rec = isiTbl[idxrec];
-          nomorRecord = idxrec + 1;
-          const obj = {};
-          strTbl.forEach((kol) => {
-            const column_name = kol.column_name || kol.COLUMN_NAME;
-            const is_nullable = kol.is_nullable || kol.IS_NULLABLE;
-            const data_type = kol.data_type || kol.DATA_TYPE;
-            if (rec[column_name] || is_nullable == "NO" || rec[column_name] === 0) {
-              if (column_name == "inven_catid") {
-                if (dest == "inventory_category") obj.inven_catid = `${rec.kodeacc}${rec.compcode}${rec.isdeleted}`;
-                if (dest == "inventory_receipt") obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
-                if (dest == "inventory_issued_group_detail") obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
-              } else if (dest == "task_attachment" && column_name == "attchFile") {
-                obj.attchFile = obj.attachmentKey;
+          for (let idxrec = 0; idxrec < isiTbl.length; idxrec++) {
+            const rec = isiTbl[idxrec];
+            nomorRecord = idxrec + 1;
+            const obj = {};
+            strTbl.forEach((kol) => {
+              const column_name = kol.column_name || kol.COLUMN_NAME;
+              const is_nullable = kol.is_nullable || kol.IS_NULLABLE;
+              const data_type = kol.data_type || kol.DATA_TYPE;
+              if (rec[column_name] || is_nullable == "NO" || rec[column_name] === 0) {
+                if (column_name == "inven_catid") {
+                  if (dest == "inventory_category") obj.inven_catid = `${rec.kodeacc}${rec.compcode}${rec.isdeleted}`;
+                  if (dest == "inventory_receipt") obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
+                  if (dest == "inventory_issued_group_detail") obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
+                } else if (dest == "task_attachment" && column_name == "attchFile") {
+                  obj.attchFile = obj.attachmentKey;
+                } else {
+                  switch (data_type) {
+                    case "varchar":
+                      obj[column_name] = rec[column_name] || "";
+                      break;
+
+                    case "date":
+                      obj[column_name] = rec[column_name] || null;
+                      break;
+
+                    case "datetime":
+                      obj[column_name] = rec[column_name] || new Date();
+                      break;
+                    case "time":
+                      obj[column_name] = rec[column_name] || null;
+                      break;
+
+                    case "timestamp":
+                      obj[column_name] = rec[column_name] || new Date();
+                      break;
+
+                    default:
+                      obj[column_name] = rec[column_name] || 0;
+                      break;
+                  }
+                }
               } else {
-                switch (data_type) {
-                  case "varchar":
-                    obj[column_name] = rec[column_name] || "";
-                    break;
-
-                  case "date":
-                    obj[column_name] = rec[column_name] || null;
-                    break;
-
-                  case "datetime":
-                    obj[column_name] = rec[column_name] || new Date();
-                    break;
-                  case "time":
-                    obj[column_name] = rec[column_name] || null;
-                    break;
-
-                  case "timestamp":
-                    obj[column_name] = rec[column_name] || new Date();
-                    break;
-
-                  default:
-                    obj[column_name] = rec[column_name] || 0;
-                    break;
+                if (column_name == "inven_catid") {
+                  if (dest == "inventory_category") obj.inven_catid = `${rec.kodeacc}${rec.compcode}${rec.isdeleted}`;
+                  if (dest == "inventory_receipt") obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
+                  if (dest == "inventory_issued_group_detail") obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
                 }
               }
-            } else {
-              if (column_name == "inven_catid") {
-                if (dest == "inventory_category") obj.inven_catid = `${rec.kodeacc}${rec.compcode}${rec.isdeleted}`;
-                if (dest == "inventory_receipt") obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
-                if (dest == "inventory_issued_group_detail") obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
-              }
-            }
-          });
+            });
 
-          try {
-            await dbDest(dest).insert(obj);
-          } catch (err) {
-            if (err.code === "ER_DUP_ENTRY" || err.errno === 1062) {
-              console.log("Data duplikat ditemukan");
-            } else if (err.code === "ER_DATA_TOO_LONG" || err.errno === 1406) {
-              console.warn(`${dest} row number = ${nomorRecord}, ${err.sqlMessage}`);
-              if (err.sqlMessage.includes("logo")) {
-                // Buat salinan row tanpa kolom logo
-                const { logo, ...safeRow } = obj;
-                await dbDest(dest).insert(safeRow);
+            try {
+              await dbDest(dest).insert(obj);
+            } catch (err) {
+              if (err.code === "ER_DUP_ENTRY" || err.errno === 1062) {
+                console.log("Data duplikat ditemukan");
+              } else if (err.code === "ER_DATA_TOO_LONG" || err.errno === 1406) {
+                console.warn(`${dest} row number = ${nomorRecord}, ${err.sqlMessage}`);
+                if (err.sqlMessage.includes("logo")) {
+                  // Buat salinan row tanpa kolom logo
+                  const { logo, ...safeRow } = obj;
+                  await dbDest(dest).insert(safeRow);
+                }
+              } else {
+                throw err;
               }
-            } else {
-              throw err;
             }
           }
         }
+        await dbDest("mysql_migration_done").insert({ tablename: dest });
       }
-      await dbDest("mysql_migration_done").insert({ tablename: dest });
-      // }
     }
 
     // for (let index = 0; index < tableContraint.length; index++) {
