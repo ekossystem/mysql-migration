@@ -111,6 +111,9 @@ async function main() {
               const column_name = kol.column_name || kol.COLUMN_NAME;
               const is_nullable = kol.is_nullable || kol.IS_NULLABLE;
               const data_type = kol.data_type || kol.DATA_TYPE;
+              if (kol.column_name == "itemcategory" && dest == "itembarangjasa") {
+                console.log(`${dest}.${kol.column_name}: `, rec[column_name]);
+              }
               if (rec[column_name] || is_nullable == "NO" || rec[column_name] === 0) {
                 if (column_name == "inven_catid") {
                   if (dest == "inventory_category") obj.inven_catid = `${rec.kodeacc}${rec.compcode}${rec.isdeleted}`;
