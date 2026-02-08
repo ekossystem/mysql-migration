@@ -152,6 +152,7 @@ async function main() {
                   }
                 }
               } else {
+                console.log("masuk else");
                 if (column_name == "inven_catid") {
                   if (dest == "inventory_category") obj.inven_catid = `${rec.kodeacc}${rec.compcode}${rec.isdeleted}`;
                   if (dest == "inventory_receipt") obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
