@@ -119,29 +119,33 @@ async function main() {
                 } else if (dest == "task_attachment" && column_name == "attchFile") {
                   obj.attchFile = obj.attachmentKey;
                 } else {
-                  switch (data_type) {
-                    case "varchar":
-                      obj[column_name] = rec[column_name] || "";
-                      break;
+                  if (is_nullable == "NO") {
+                    switch (data_type) {
+                      case "varchar":
+                        obj[column_name] = rec[column_name] || "";
+                        break;
 
-                    case "date":
-                      obj[column_name] = rec[column_name] || null;
-                      break;
+                      case "date":
+                        obj[column_name] = rec[column_name] || null;
+                        break;
 
-                    case "datetime":
-                      obj[column_name] = rec[column_name] || new Date();
-                      break;
-                    case "time":
-                      obj[column_name] = rec[column_name] || null;
-                      break;
+                      case "datetime":
+                        obj[column_name] = rec[column_name] || new Date();
+                        break;
+                      case "time":
+                        obj[column_name] = rec[column_name] || null;
+                        break;
 
-                    case "timestamp":
-                      obj[column_name] = rec[column_name] || new Date();
-                      break;
+                      case "timestamp":
+                        obj[column_name] = rec[column_name] || new Date();
+                        break;
 
-                    default:
-                      obj[column_name] = rec[column_name] || 0;
-                      break;
+                      default:
+                        obj[column_name] = rec[column_name] || 0;
+                        break;
+                    }
+                  } else {
+                    obj[column_name] = null;
                   }
                 }
               } else {
