@@ -50,14 +50,14 @@ async function main() {
       .select("table_name")
       .orderBy("table_name");
     const tableDbSrc = listAsal.map((table) => table.TABLE_NAME || table.table_name);
-    console.log("tableDbSrc: ", tableDbSrc.length);
+    // console.log("tableDbSrc: ", tableDbSrc.length);
 
     const tableDone = await dbDest("mysql_migration_done").select("tablename");
     for (let idxDone = 0; idxDone < tableDone.length; idxDone++) {
       const dn = tableDone[idxDone];
       if (arrTableDone.indexOf(dn.tablename) == -1) arrTableDone.push(dn.tablename);
     }
-    console.log("arrTableDone:", arrTableDone);
+    // console.log("arrTableDone:", arrTableDone);
 
     // const [tableWithFK] = await dbDest.raw(`SELECT kcu.table_name AS child_table, kcu.referenced_table_name AS master_table
     //  FROM information_schema.key_column_usage kcu WHERE kcu.constraint_schema = '${namaDbDest}' AND kcu.referenced_table_name IS NOT NULL`);
@@ -111,7 +111,7 @@ async function main() {
               const column_name = kol.column_name || kol.COLUMN_NAME;
               const is_nullable = kol.is_nullable || kol.IS_NULLABLE;
               const data_type = kol.data_type || kol.DATA_TYPE;
-              if (kol.column_name == "itemcategory" && dest == "itembarangjasa") {
+              if (kol.column_name == "itemcategory") {
                 console.log(`${dest}.${kol.column_name}: `, rec[column_name]);
               }
               if (rec[column_name] || is_nullable == "NO" || rec[column_name] === 0) {
@@ -163,9 +163,10 @@ async function main() {
             try {
               await dbDest(dest).insert(obj);
             } catch (err) {
-              if (err.code === "ER_DUP_ENTRY" || err.errno === 1062) {
-                console.log("Data duplikat ditemukan");
-              } else if (err.code === "ER_DATA_TOO_LONG" || err.errno === 1406) {
+              // if (err.code === "ER_DUP_ENTRY" || err.errno === 1062) {
+              // console.log("Data duplikat ditemukan ");
+              // } else
+              if (err.code === "ER_DATA_TOO_LONG" || err.errno === 1406) {
                 console.warn(`${dest} row number = ${nomorRecord}, ${err.sqlMessage}`);
                 if (err.sqlMessage.includes("logo")) {
                   // Buat salinan row tanpa kolom logo
