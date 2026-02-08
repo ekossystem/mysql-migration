@@ -163,10 +163,9 @@ async function main() {
             try {
               await dbDest(dest).insert(obj);
             } catch (err) {
-              // if (err.code === "ER_DUP_ENTRY" || err.errno === 1062) {
-              // console.log("Data duplikat ditemukan ");
-              // } else
-              if (err.code === "ER_DATA_TOO_LONG" || err.errno === 1406) {
+              if (err.code === "ER_DUP_ENTRY" || err.errno === 1062) {
+                console.log("Data duplikat ditemukan ");
+              } else if (err.code === "ER_DATA_TOO_LONG" || err.errno === 1406) {
                 console.warn(`${dest} row number = ${nomorRecord}, ${err.sqlMessage}`);
                 if (err.sqlMessage.includes("logo")) {
                   // Buat salinan row tanpa kolom logo
