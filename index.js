@@ -83,7 +83,7 @@ async function main() {
       // if (tableContraint.indexOf(dest) == -1 && arrTableDone.indexOf(dest) == -1) {
       const src = tableDbSrc.find((n) => n == dest);
       if (src) {
-        console.log(`${index + 1}. (dbDest): ${dest}  ,(dbSrc): ${src}`);
+        console.log(`${index + 1}. (dbDest:${namaDbDest}): ${dest}  ,(dbSrc:${namaDbSrc}): ${src}`);
         const [strTbl, isiTbl] = await Promise.all([
           dbDest("information_schema.columns")
             .where({
@@ -105,6 +105,7 @@ async function main() {
           const obj = {};
           strTbl.forEach((kol) => {
             if (rec[kol.column_name] || kol.is_nullable == "NO" || rec[kol.column_name] === 0) {
+              console.log('Masuk (rec[kol.column_name] || kol.is_nullable == "NO" || rec[kol.column_name] === 0)');
               if (kol.column_name == "inven_catid") {
                 if (dest == "inventory_category") obj.inven_catid = `${rec.kodeacc}${rec.compcode}${rec.isdeleted}`;
                 if (dest == "inventory_receipt") obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
@@ -138,6 +139,8 @@ async function main() {
                 }
               }
             } else {
+              console.log("masuk else, kol.is_nullable: ", kol.is_nullable);
+              console.log("masuk else, rec[kol.column_name]: ", rec[kol.column_name]);
               if (kol.column_name == "inven_catid") {
                 if (dest == "inventory_category") obj.inven_catid = `${rec.kodeacc}${rec.compcode}${rec.isdeleted}`;
                 if (dest == "inventory_receipt") obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
