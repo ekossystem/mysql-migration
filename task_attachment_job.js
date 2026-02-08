@@ -7,30 +7,23 @@ const envs = require("./envs/local.json");
 // const path = require('node:path');
 const moment = require("moment");
 
+const companyGroup = "indoplas"; // HARUS DIISI !, sebgai subBucket di S3 AWS
+
 Object.keys(envs).forEach((key) => {
   process.env[key] = envs[key];
 });
 
 const { db, s3storage } = require("./libs");
-
 console.log('PROCESS "ERP FILE ATTACHMENT" begins');
 process.on("exit", function (code) {
-  return console.log(
-    `PROCESS "ERP FILE ATTACHMENT" Exit with code ${code} @ ${moment().format(
-      "DD-MMM-YY HH:mm:ss"
-    )}`
-  );
+  return console.log(`PROCESS "ERP FILE ATTACHMENT" Exit with code ${code} @ ${moment().format("DD-MMM-YY HH:mm:ss")}`);
 });
 
 async function main() {
   try {
     const ctx = db.instance("src");
     // const hariini = moment();
-    console.log(
-      `Start PROCESS "ERP FILE ATTACHMENT" @ ${moment().format(
-        "DD-MMM-YY HH:mm:ss"
-      )}`
-    );
+    console.log(`Start PROCESS "ERP FILE ATTACHMENT" @ ${moment().format("DD-MMM-YY HH:mm:ss")}`);
     const [strTbl, attchList] = await Promise.all([
       ctx("information_schema.columns")
         .where({
@@ -38,9 +31,7 @@ async function main() {
           table_name: "task_attachment",
         })
         .select(["column_name", "data_type", "is_nullable"]),
-      ctx("task_attachment")
-        .where({ isdeleted: 0 })
-        .whereRaw(`ifnull(attchFileNm,'')<>''`),
+      ctx("task_attachment").where({ isdeleted: 0 }).whereRaw(`ifnull(attchFileNm,'')<>''`),
     ]);
 
     const kol = strTbl.find((k) => k.column_name == "attchFile");
@@ -49,19 +40,10 @@ async function main() {
         console.log(`task_attachment attchList: ${attchList.length} records`);
         for (let index = 0; index < attchList.length; index++) {
           const rw = attchList[index];
-          await s3storage.uploadToS3(
-            process.env.AWS_BUCKET,
-            `${process.env.ATTACHMENT_PATH}erp${rw.attachmentKey}`,
-            rw.attchFile,
-            ""
-          );
+          await s3storage.uploadToS3(process.env.AWS_BUCKET, `${process.env.ATTACHMENT_PATH}/${companyGroup}/erp${rw.attachmentKey}`, rw.attchFile, "");
         }
       }
-      console.log(
-        `PROCESS "ERP FILE ATTACHMENT" Complete Successfully @ ${moment().format(
-          "DD-MMM-YY HH:mm:ss"
-        )} `
-      );
+      console.log(`PROCESS "ERP FILE ATTACHMENT" Complete Successfully @ ${moment().format("DD-MMM-YY HH:mm:ss")} `);
     }
 
     process.exit(1);
