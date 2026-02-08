@@ -45,7 +45,8 @@ async function main() {
         table_schema: namaDbSrc,
         table_type: "BASE TABLE",
       })
-      .select("table_name");
+      .select("table_name")
+      .orderBy("table_name");
     const tableDbSrc = listAsal.map((table) => table.TABLE_NAME || table.table_name);
     console.log("tableDbSrc: ", tableDbSrc.length);
 
