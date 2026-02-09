@@ -71,7 +71,9 @@ async function main() {
 
     for (let index = 0; index < tblUtama.length; index++) {
       const dest = tblUtama[index];
+      nomorRecord = 0;
       if (arrTableDone.indexOf(dest) == -1) {
+        console.log(`${index + 1}. (dbDest:${namaDbDest}): ${dest}  ,(dbSrc:${namaDbSrc}): ${dest}`);
         const isiTbl = tblUtamaData[index];
         const strTbl = await dbDest("information_schema.columns")
           .where({
