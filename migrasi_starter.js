@@ -64,7 +64,7 @@ async function main() {
     const tblUtamaData = await Promise.all([
       dbSrc("users as t1").select("t1.*").innerJoin("sys_user as t2", "t1.id", "t2.user_id").whereIn("t2.compcode", migrasiCompany),
 
-      dbSrc("sys_user").select("user_id").whereIn("compcode", migrasiCompany),
+      dbSrc("sys_user").whereIn("compcode", migrasiCompany),
 
       dbSrc("company").whereIn("compcode", migrasiCompany),
     ]);
@@ -228,6 +228,8 @@ async function main() {
                     if (dest == "inventory_category") obj.inven_catid = `${rec.kodeacc}${rec.compcode}${rec.isdeleted}`;
                     if (dest == "inventory_receipt") obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
                     if (dest == "inventory_issued_group_detail") obj.inven_catid = `${rec.invKodeacc}${rec.compcode}${rec.isdeleted}`;
+                  } else if (column_name == "judul") {
+                    obj.judul = "";
                   }
                 }
               });
