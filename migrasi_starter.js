@@ -127,7 +127,15 @@ async function main() {
               if (err.sqlMessage.includes("logo")) {
                 // Buat salinan row tanpa kolom logo
                 const { logo, ...safeRow } = obj;
-                await dbDest(dest).insert(safeRow);
+                try {
+                  await dbDest(dest).insert(safeRow);
+                } catch (salah) {
+                  if (salah.code === "ER_DUP_ENTRY" || salah.errno === 1062) {
+                    console.log("Data duplikat ditemukan ");
+                  } else {
+                    throw err;
+                  }
+                }
               }
             } else {
               throw err;
