@@ -1,22 +1,22 @@
 /* eslint-disable no-console */
 const envs = require("./envs/local.json");
-// const readline = require("readline");
+const readline = require("readline");
 const moment = require("moment");
 const db = require("./libs/db.js");
 
-// function askQuestion(query) {
-//   const rl = readline.createInterface({
-//     input: process.stdin,
-//     output: process.stdout,
-//   });
+function askQuestion(query) {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
 
-//   return new Promise((resolve) =>
-//     rl.question(query, (ans) => {
-//       rl.close();
-//       resolve(ans);
-//     })
-//   );
-// }
+  return new Promise((resolve) =>
+    rl.question(query, (ans) => {
+      rl.close();
+      resolve(ans);
+    }),
+  );
+}
 
 Object.keys(envs).forEach((key) => {
   process.env[key] = envs[key];
@@ -31,8 +31,8 @@ process.on("exit", function (code) {
 });
 
 async function main() {
-  // const overWriteCompcode = await askQuestion("Masukkan COMPCODE yang ingin di-OVERWRITE: ");
-  // console.log("overWriteCompcode:", overWriteCompcode);
+  const overWriteCompcode = await askQuestion("Masukkan COMPCODE yang ingin di-OVERWRITE: ");
+  console.log("overWriteCompcode:", overWriteCompcode);
   const dbSrc = db.instance("src");
   const namaDbSrc = db.databaseName("src");
   const dbDest = db.instance("dest");
@@ -172,6 +172,7 @@ async function main() {
           }
         }
         await dbDest("mysql_migration_done").insert({ tablename: dest });
+        arrTableDone.push(dest);
       }
     }
 
