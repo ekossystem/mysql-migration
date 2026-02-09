@@ -73,8 +73,48 @@ async function main() {
       const dest = tblUtama[index];
       if (arrTableDone.indexOf(dest) == -1) {
         const isiTbl = tblUtamaData[index];
+        const strTbl = await dbDest("information_schema.columns")
+          .where({
+            table_schema: namaDbDest,
+            table_name: dest,
+          })
+          .select(["column_name", "data_type", "is_nullable"]);
+
         for (let idxrec = 0; idxrec < isiTbl.length; idxrec++) {
-          const obj = isiTbl[idxrec];
+          const rec = isiTbl[idxrec];
+          const obj = {};
+          strTbl.forEach((kol) => {
+            const column_name = kol.column_name || kol.COLUMN_NAME;
+            const is_nullable = kol.is_nullable || kol.IS_NULLABLE;
+            const data_type = kol.data_type || kol.DATA_TYPE;
+            if (rec[column_name] || is_nullable == "NO" || rec[column_name] === 0) {
+              switch (data_type) {
+                case "varchar":
+                  obj[column_name] = rec[column_name] || "";
+                  break;
+
+                case "date":
+                  obj[column_name] = rec[column_name] || null;
+                  break;
+
+                case "datetime":
+                  obj[column_name] = rec[column_name] || new Date();
+                  break;
+                case "time":
+                  obj[column_name] = rec[column_name] || null;
+                  break;
+
+                case "timestamp":
+                  obj[column_name] = rec[column_name] || new Date();
+                  break;
+
+                default:
+                  obj[column_name] = rec[column_name] || 0;
+                  break;
+              }
+            }
+          });
+
           try {
             await dbDest(dest).insert(obj);
           } catch (err) {
