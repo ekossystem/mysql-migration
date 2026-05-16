@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
-const envs = require("./envs/local.json");
+const envs = require("../envs/local.json");
 // const readline = require("readline");
 const moment = require("moment");
-const db = require("./libs/db.js");
+const db = require("../libs/db.js");
 
 // function askQuestion(query) {
 //   const rl = readline.createInterface({
