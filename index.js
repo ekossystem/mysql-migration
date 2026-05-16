@@ -146,7 +146,11 @@ async function main() {
             // Normalisasi key record source menjadi lowercase untuk pencocokan case-insensitive
             const recLower = {};
             Object.keys(rec).forEach((key) => {
-              recLower[key.toLowerCase()] = rec[key];
+              if (key.toLowerCase() == "compcode" && overWriteCompcode) {
+                recLower[key.toLowerCase()] = overWriteCompcode;
+              } else {
+                recLower[key.toLowerCase()] = rec[key];
+              }
             });
 
             // Helper untuk mengambil value dengan key case-insensitive
