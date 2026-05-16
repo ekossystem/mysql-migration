@@ -52,7 +52,6 @@ async function main() {
     "menu",
     "menu_mobileapp",
     "menu_mobileapp_role",
-    "menu_user",
     "modules",
     "mst_pubsub_config",
     "mysql_migration_done",
