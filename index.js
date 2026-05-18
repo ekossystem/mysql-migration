@@ -31,8 +31,11 @@ process.on("exit", function (code) {
 });
 
 async function main() {
-  const overWriteCompcode = await askQuestion("Masukkan COMPCODE yang ingin di-OVERWRITE: ");
-  console.log("overWriteCompcode:", overWriteCompcode);
+  const migrasiCompany = ["01"];
+  const migrasiCompanyMap = new Map([['01', 'INTERRA']]);
+  const migrasiCompanyDest = Array.from(migrasiCompanyMap.values());
+  const overWriteMode = await askQuestion("Apakah mau mengaktifkan OVERWRITE MODE? (y/n): ");
+  console.log(`overWriteMode: ${overWriteMode == 'y' ? 'YES' : 'NO'}`);
   const dbSrc = db.instance("src");
   const namaDbSrc = db.databaseName("src");
   const dbDest = db.instance("dest");
@@ -42,6 +45,7 @@ async function main() {
     "crew_statusmasuk",
     "crew_statusberhenti",
     "circulation_document_type",
+    "customer_payment_form",
     "dfjurnal",
     "dimensiontrxdefault",
     "dimensiontrxspliter",
@@ -84,7 +88,11 @@ async function main() {
     "tax_business_group",
     "tax_npwp",
     "tax_wh_jenis_penghasilan",
-    "token", "vendor_business_category"
+    "token",
+    "vendor_business_category",
+    "sales_line_type",
+    "timesheet_variable",
+    "po_line_type"
   ];
   let nomorRecord = 0;
   try {
@@ -105,8 +113,120 @@ async function main() {
       const dn = tableDone[idxDone];
       if (arrTableDone.indexOf(dn.tablename) == -1) arrTableDone.push(dn.tablename);
     }
-    // console.log("arrTableDone:", arrTableDone);
+    const tblUtama = ["users", "sys_user", "company"];
+    // const [tblUser, tblSysuser, tblCompany]
+    const tblUtamaData = await Promise.all([
+      dbSrc("users as t1").select("t1.*").innerJoin("sys_user as t2", "t1.id", "t2.user_id").whereIn("t2.compcode", migrasiCompany),
 
+      dbSrc("sys_user").whereIn("compcode", migrasiCompany),
+
+      dbSrc("company").whereIn("compcode", migrasiCompany),
+    ]);
+
+    for (let index = 0; index < tblUtama.length; index++) {
+      const dest = tblUtama[index];
+      nomorRecord = 0;
+      if (arrTableDone.indexOf(dest) == -1) {
+        console.log(`${index + 1}. (dbDest:${namaDbDest}): ${dest}  ,(dbSrc:${namaDbSrc}): ${dest}`);
+        const isiTbl = tblUtamaData[index];
+        const strTbl = await dbDest("information_schema.columns")
+          .where({
+            table_schema: namaDbDest,
+            table_name: dest,
+          })
+          .select(["column_name", "data_type", "is_nullable"]);
+
+        const kolCompcode = strTbl.find((row) => row.column_name == "compcode" || row.COLUMN_NAME == "compcode");
+        if (kolCompcode && overWriteMode == 'y') {
+          await dbDest(dest).whereIn("compcode", migrasiCompanyDest).del();
+        }
+
+        for (let idxrec = 0; idxrec < isiTbl.length; idxrec++) {
+          const rec = isiTbl[idxrec];
+
+          // Normalisasi key record source menjadi lowercase untuk pencocokan case-insensitive
+          const recLower = {};
+          Object.keys(rec).forEach((key) => {
+            if (key.toLowerCase() == "compcode" && migrasiCompanyMap.has(rec[key])) {
+              recLower[key.toLowerCase()] = migrasiCompanyMap.get(rec[key]);
+            } else {
+              recLower[key.toLowerCase()] = rec[key];
+            }
+          });
+
+          // Helper untuk mengambil value dengan key case-insensitive
+          const getVal = (key) => recLower[key.toLowerCase()];
+
+          nomorRecord = idxrec + 1;
+          const obj = {};
+          strTbl.forEach((kol) => {
+            const column_name = kol.column_name || kol.COLUMN_NAME;
+            const is_nullable = kol.is_nullable || kol.IS_NULLABLE;
+            const data_type = kol.data_type || kol.DATA_TYPE;
+
+            const val = getVal(column_name);
+
+            if (val !== undefined || is_nullable == "NO" || val === 0) {
+              switch (data_type) {
+                case "varchar":
+                case "text":
+                case "longtext":
+                  obj[column_name] = val || "";
+                  break;
+
+                case "date":
+                  obj[column_name] = val || null;
+                  break;
+
+                case "datetime":
+                  obj[column_name] = val || new Date();
+                  break;
+                case "time":
+                  obj[column_name] = val || null;
+                  break;
+
+                case "timestamp":
+                  obj[column_name] = val || new Date();
+                  break;
+
+                default:
+                  obj[column_name] = val || 0;
+                  break;
+              }
+            }
+          });
+
+          try {
+            await dbDest(dest).insert(obj);
+          } catch (err) {
+            if (err.code === "ER_DUP_ENTRY" || err.errno === 1062) {
+              console.log("Data duplikat ditemukan ");
+            } else if (err.code === "ER_DATA_TOO_LONG" || err.errno === 1406) {
+              console.warn(`${dest} row number = ${nomorRecord}, ${err.sqlMessage}`);
+              if (err.sqlMessage.includes("logo")) {
+                // Buat salinan row tanpa kolom logo
+                const { logo, ...safeRow } = obj;
+                try {
+                  await dbDest(dest).insert(safeRow);
+                } catch (salah) {
+                  if (salah.code === "ER_DUP_ENTRY" || salah.errno === 1062) {
+                    console.log("Data duplikat ditemukan ");
+                  } else {
+                    throw err;
+                  }
+                }
+              }
+            } else {
+              throw err;
+            }
+          }
+        }
+        await dbDest("mysql_migration_done").insert({ tablename: dest });
+        arrTableDone.push(dest);
+      }
+    }
+
+    console.log("arrTableDone:", arrTableDone);
     const tables = await dbDest("information_schema.tables")
       .where({
         table_schema: namaDbDest,
@@ -136,18 +256,18 @@ async function main() {
             dbSrc(src).select([" * "]),
           ]);
 
-          // const kolCompcode = strTbl.find((row) => row.column_name == "compcode");
-          // if (kolCompcode && overWriteCompcode) {
-          //   await dbDest(dest).where({ compcode: overWriteCompcode }).del();
-          // }
+          const kolCompcode = strTbl.find((row) => row.column_name == "compcode" || row.COLUMN_NAME == "compcode");
+          if (kolCompcode && overWriteMode == 'y') {
+            await dbDest(dest).whereIn("compcode", migrasiCompanyDest).del();
+          }
 
           for (let idxrec = 0; idxrec < isiTbl.length; idxrec++) {
             const rec = isiTbl[idxrec];
             // Normalisasi key record source menjadi lowercase untuk pencocokan case-insensitive
             const recLower = {};
             Object.keys(rec).forEach((key) => {
-              if (key.toLowerCase() == "compcode" && overWriteCompcode) {
-                recLower[key.toLowerCase()] = overWriteCompcode;
+              if (key.toLowerCase() == "compcode" && migrasiCompanyMap.has(rec[key])) {
+                recLower[key.toLowerCase()] = migrasiCompanyMap.get(rec[key]);
               } else {
                 recLower[key.toLowerCase()] = rec[key];
               }
@@ -156,77 +276,101 @@ async function main() {
             // Helper untuk mengambil value dengan key case-insensitive
             const getVal = (key) => recLower[key.toLowerCase()];
 
+            const srcCompcodeKey = Object.keys(rec).find((key) => key.toLowerCase() === "compcode");
+            const srcCompcode = srcCompcodeKey ? rec[srcCompcodeKey] : undefined;
+
             nomorRecord = idxrec + 1;
-            const obj = {};
-            strTbl.forEach((kol) => {
-              const column_name = kol.column_name || kol.COLUMN_NAME;
-              const is_nullable = kol.is_nullable || kol.IS_NULLABLE;
-              const data_type = kol.data_type || kol.DATA_TYPE;
+            if (!kolCompcode || (kolCompcode && migrasiCompany.indexOf(srcCompcode) !== -1)) {
 
-              const val = getVal(column_name);
+              const obj = {};
+              strTbl.forEach((kol) => {
+                const column_name = kol.column_name || kol.COLUMN_NAME;
+                const is_nullable = kol.is_nullable || kol.IS_NULLABLE;
+                const data_type = kol.data_type || kol.DATA_TYPE;
 
-              if (val !== undefined || is_nullable == "NO" || val === 0) {
-                if (column_name == "inven_catid") {
-                  const kodeacc = getVal("kodeacc") || getVal("invKodeacc") || "";
-                  const compcode = getVal("compcode") || "";
-                  const isdeleted = getVal("isdeleted") || 0;
-                  obj.inven_catid = `${kodeacc}${compcode}${isdeleted}`;
-                } else if (dest == "task_attachment" && column_name == "attchFile") {
-                  obj.attchFile = getVal("attachmentKey") || "";
-                } else {
-                  switch (data_type) {
-                    case "varchar":
-                    case "text":
-                    case "longtext":
-                      obj[column_name] = val || "";
-                      break;
+                const val = getVal(column_name);
 
-                    case "date":
-                      obj[column_name] = val || null;
-                      break;
+                if (val !== undefined || is_nullable == "NO" || val === 0) {
+                  if (column_name == "inven_catid") {
+                    const kodeacc = getVal("kodeacc") || getVal("invKodeacc") || "";
+                    const compcode = getVal("compcode") || "";
+                    const isdeleted = getVal("isdeleted") || 0;
+                    obj.inven_catid = `${kodeacc}${compcode}${isdeleted}`;
+                  } else if (dest == "task_attachment" && column_name == "attchFile") {
+                    obj.attchFile = getVal("attachmentKey") || "";
+                    // table berikut ini PRIMARY KEY nya perlu ditambahkan `compcode`:
+                    // aradjutypegroup
+                    // arinvtt_oustanding_status
+                    // arpotongan
+                    // bank
+                    // claim
+                    // crewgolongan
+                    // crewpangkat 
+                    // crewleavekind
+                    // komponengaji
+                    // lookup_sales
+                  } else {
+                    switch (data_type) {
+                      case "varchar":
+                      case "text":
+                      case "longtext":
+                        obj[column_name] = val || "";
+                        break;
 
-                    case "datetime":
-                      obj[column_name] = val || new Date();
-                      break;
-                    case "time":
-                      obj[column_name] = val || null;
-                      break;
+                      case "date":
+                        obj[column_name] = val || null;
+                        break;
 
-                    case "timestamp":
-                      obj[column_name] = val || new Date();
-                      break;
+                      case "datetime":
+                        obj[column_name] = val || new Date();
+                        break;
+                      case "time":
+                        obj[column_name] = val || null;
+                        break;
 
-                    default:
-                      obj[column_name] = val || 0;
-                      break;
+                      case "timestamp":
+                        obj[column_name] = val || new Date();
+                        break;
+
+                      default:
+                        obj[column_name] = val || 0;
+                        break;
+                    }
                   }
                 }
-              }
-            });
+              });
 
-            try {
-              await dbDest(dest).insert(obj);
-            } catch (err) {
-              if (err.code === "ER_DUP_ENTRY" || err.errno === 1062) {
-                console.log("Data duplikat ditemukan ");
-              } else if (err.code === "ER_DATA_TOO_LONG" || err.errno === 1406) {
-                console.warn(`${dest} row number = ${nomorRecord}, ${err.sqlMessage}`);
-                if (err.sqlMessage.includes("logo")) {
-                  // Buat salinan row tanpa kolom logo
-                  const { logo, ...safeRow } = obj;
-                  await dbDest(dest).insert(safeRow);
+              try {
+                await dbDest(dest).insert(obj);
+              } catch (err) {
+                if (err.code === "ER_DUP_ENTRY" || err.errno === 1062) {
+                  console.log("Data duplikat ditemukan ");
+                } else if (err.code === "ER_DATA_TOO_LONG" || err.errno === 1406) {
+                  console.warn(`${dest} row number = ${nomorRecord}, ${err.sqlMessage}`);
+                  if (err.sqlMessage.includes("logo")) {
+                    // Buat salinan row tanpa kolom logo
+                    const { logo, ...safeRow } = obj;
+                    try {
+                      await dbDest(dest).insert(safeRow);
+                    } catch (salah) {
+                      if (salah.code === "ER_DUP_ENTRY" || salah.errno === 1062) {
+                        console.log("Data duplikat ditemukan ");
+                      } else {
+                        throw err;
+                      }
+                    }
+                  }
+                } else {
+                  throw err;
                 }
-              } else {
-                throw err;
               }
             }
           }
+          await dbDest("mysql_migration_done").insert({ tablename: dest });
+          arrTableDone.push(dest);
         }
-        await dbDest("mysql_migration_done").insert({ tablename: dest });
-        arrTableDone.push(dest);
       }
     }
-
 
     console.log(`PROCESS "Migrasi data DB1 ke DB2" Complete Successfully @ ${moment().format("DD-MMM-YY HH:mm:ss")} `);
     process.exit(1);
